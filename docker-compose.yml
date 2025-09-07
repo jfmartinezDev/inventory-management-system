@@ -1,5 +1,4 @@
-version: '3.8'
-
+# Docker Compose configuration for development
 services:
   # PostgreSQL Database
   postgres:
@@ -32,7 +31,7 @@ services:
       SECRET_KEY: ${SECRET_KEY:-your-secret-key-here-change-in-production}
       ALGORITHM: HS256
       ACCESS_TOKEN_EXPIRE_MINUTES: 480
-      BACKEND_CORS_ORIGINS: '["http://localhost:3000","http://localhost","http://frontend"]'
+      BACKEND_CORS_ORIGINS: '["http://localhost:3000","http://localhost","http://localhost:80","http://backend:8000"]'
       ENVIRONMENT: development
       DEBUG: "True"
     ports:
@@ -55,6 +54,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        - NODE_ENV=production
     container_name: inventory-frontend
     ports:
       - "80:80"
@@ -63,7 +64,7 @@ services:
     networks:
       - inventory-network
     environment:
-      - VITE_API_URL=http://localhost:8000
+      - VITE_API_URL=http://backend:8000
 
 volumes:
   postgres_data:
