@@ -10,7 +10,7 @@ from datetime import datetime
 
 class UserBase(BaseModel):
     """Base schema for User with common attributes."""
-    
+
     email: EmailStr
     username: str = Field(..., min_length=3, max_length=50)
     full_name: Optional[str] = None
@@ -20,13 +20,13 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     """Schema for creating a new user."""
-    
+
     password: str = Field(..., min_length=8)
 
 
 class UserUpdate(BaseModel):
     """Schema for updating an existing user."""
-    
+
     email: Optional[EmailStr] = None
     username: Optional[str] = Field(None, min_length=3, max_length=50)
     full_name: Optional[str] = None
@@ -36,20 +36,21 @@ class UserUpdate(BaseModel):
 
 class UserInDBBase(UserBase):
     """Base schema for User stored in database."""
-    
+
     id: int
     created_at: datetime
     updated_at: datetime
-    
+
     model_config = ConfigDict(from_attributes=True)
 
 
 class User(UserInDBBase):
     """Schema for User response."""
+
     pass
 
 
 class UserInDB(UserInDBBase):
     """Schema for User in database with hashed password."""
-    
+
     hashed_password: str

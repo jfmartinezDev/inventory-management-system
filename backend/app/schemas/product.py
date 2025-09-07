@@ -10,7 +10,7 @@ from datetime import datetime
 
 class ProductBase(BaseModel):
     """Base schema for Product with common attributes."""
-    
+
     name: str = Field(..., min_length=1, max_length=200)
     description: Optional[str] = None
     sku: str = Field(..., min_length=1, max_length=100)
@@ -19,8 +19,8 @@ class ProductBase(BaseModel):
     image_url: Optional[str] = None
     category: Optional[str] = None
     min_stock: int = Field(default=0, ge=0)
-    
-    @field_validator('price')
+
+    @field_validator("price")
     @classmethod
     def validate_price(cls, v):
         """Ensure price has maximum 2 decimal places."""
@@ -29,12 +29,13 @@ class ProductBase(BaseModel):
 
 class ProductCreate(ProductBase):
     """Schema for creating a new product."""
+
     pass
 
 
 class ProductUpdate(BaseModel):
     """Schema for updating an existing product."""
-    
+
     name: Optional[str] = Field(None, min_length=1, max_length=200)
     description: Optional[str] = None
     sku: Optional[str] = Field(None, min_length=1, max_length=100)
@@ -43,8 +44,8 @@ class ProductUpdate(BaseModel):
     image_url: Optional[str] = None
     category: Optional[str] = None
     min_stock: Optional[int] = Field(None, ge=0)
-    
-    @field_validator('price')
+
+    @field_validator("price")
     @classmethod
     def validate_price(cls, v):
         """Ensure price has maximum 2 decimal places."""
@@ -55,25 +56,26 @@ class ProductUpdate(BaseModel):
 
 class ProductInDBBase(ProductBase):
     """Base schema for Product stored in database."""
-    
+
     id: int
     user_id: int
     created_at: datetime
     updated_at: datetime
     is_low_stock: bool
     total_value: float
-    
+
     model_config = ConfigDict(from_attributes=True)
 
 
 class Product(ProductInDBBase):
     """Schema for Product response."""
+
     pass
 
 
 class ProductList(BaseModel):
     """Schema for paginated product list response."""
-    
+
     items: list[Product]
     total: int
     page: int

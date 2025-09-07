@@ -20,8 +20,7 @@ SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
 
 # Create test engine
 engine = create_engine(
-    SQLALCHEMY_DATABASE_URL,
-    connect_args={"check_same_thread": False}
+    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
 )
 
 # Create test session factory
@@ -32,16 +31,16 @@ TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engin
 def db() -> Generator[Session, None, None]:
     """
     Create a fresh database for each test.
-    
+
     Yields:
         Session: Test database session
     """
     # Create tables
     Base.metadata.create_all(bind=engine)
-    
+
     # Create session
     session = TestingSessionLocal()
-    
+
     try:
         yield session
     finally:
@@ -54,24 +53,25 @@ def db() -> Generator[Session, None, None]:
 def client(db: Session) -> Generator[TestClient, None, None]:
     """
     Create a test client with overridden database dependency.
-    
+
     Args:
         db: Test database session
-        
+
     Yields:
         TestClient: FastAPI test client
     """
+
     def override_get_db():
         try:
             yield db
         finally:
             pass
-    
+
     app.dependency_overrides[get_db] = override_get_db
-    
+
     with TestClient(app) as test_client:
         yield test_client
-    
+
     app.dependency_overrides.clear()
 
 
@@ -79,10 +79,10 @@ def client(db: Session) -> Generator[TestClient, None, None]:
 def test_user(db: Session) -> Dict:
     """
     Create a test user.
-    
+
     Args:
         db: Database session
-        
+
     Returns:
         Dict: User data with credentials
     """
@@ -92,17 +92,17 @@ def test_user(db: Session) -> Dict:
         password="testpassword123",
         full_name="Test User",
         is_active=True,
-        is_superuser=False
+        is_superuser=False,
     )
-    
+
     user = user_repository.create(db, obj_in=user_data)
-    
+
     return {
         "id": user.id,
         "username": user.username,
         "email": user.email,
         "password": "testpassword123",
-        "full_name": user.full_name
+        "full_name": user.full_name,
     }
 
 
@@ -110,10 +110,10 @@ def test_user(db: Session) -> Dict:
 def test_superuser(db: Session) -> Dict:
     """
     Create a test superuser.
-    
+
     Args:
         db: Database session
-        
+
     Returns:
         Dict: Superuser data with credentials
     """
@@ -123,17 +123,17 @@ def test_superuser(db: Session) -> Dict:
         password="adminpassword123",
         full_name="Admin User",
         is_active=True,
-        is_superuser=True
+        is_superuser=True,
     )
-    
+
     user = user_repository.create(db, obj_in=user_data)
-    
+
     return {
         "id": user.id,
         "username": user.username,
         "email": user.email,
         "password": "adminpassword123",
-        "full_name": user.full_name
+        "full_name": user.full_name,
     }
 
 
@@ -141,10 +141,10 @@ def test_superuser(db: Session) -> Dict:
 def auth_headers(test_user: Dict) -> Dict[str, str]:
     """
     Create authentication headers for test user.
-    
+
     Args:
         test_user: Test user data
-        
+
     Returns:
         Dict: Authorization headers
     """
@@ -156,10 +156,10 @@ def auth_headers(test_user: Dict) -> Dict[str, str]:
 def superuser_headers(test_superuser: Dict) -> Dict[str, str]:
     """
     Create authentication headers for test superuser.
-    
+
     Args:
         test_superuser: Test superuser data
-        
+
     Returns:
         Dict: Authorization headers
     """

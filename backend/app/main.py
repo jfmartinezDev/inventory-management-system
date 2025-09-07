@@ -15,17 +15,17 @@ app = FastAPI(
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
-    openapi_url=f"{settings.API_V1_STR}/openapi.json"
+    openapi_url=f"{settings.API_V1_STR}/openapi.json",
 )
 
 # Configure CORS middleware
 app.add_middleware(
     CORSMiddleware,
-        allow_origins=[
+    allow_origins=[
         "http://localhost:3000",
         "http://localhost:5173",
         "http://localhost",
-        "http://localhost:80"
+        "http://localhost:80",
     ],  # React dev servers and Docker frontend
     allow_credentials=True,
     allow_methods=["*"],
@@ -33,17 +33,15 @@ app.add_middleware(
 )
 
 # Include API router
-app.include_router(
-    api_router,
-    prefix=settings.API_V1_STR
-)
+app.include_router(api_router, prefix=settings.API_V1_STR)
+
 
 # Root endpoint
 @app.get("/", tags=["Root"])
 async def root():
     """
     Root endpoint returning API information.
-    
+
     Returns:
         dict: API information
     """
@@ -52,20 +50,21 @@ async def root():
         "version": "1.0.0",
         "description": "Inventory Management System API",
         "documentation": "/docs",
-        "health": "ok"
+        "health": "ok",
     }
+
 
 # Health check endpoint
 @app.get("/health", tags=["Health"])
 async def health_check():
     """
     Health check endpoint for monitoring.
-    
+
     Returns:
         dict: Health status
     """
     return {
         "status": "healthy",
         "service": "inventory-api",
-        "environment": settings.ENVIRONMENT
+        "environment": settings.ENVIRONMENT,
     }

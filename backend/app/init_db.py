@@ -24,7 +24,7 @@ def init_db() -> None:
 def create_superuser(db: Session) -> None:
     """
     Create initial superuser if it doesn't exist.
-    
+
     Args:
         db: Database session
     """
@@ -38,7 +38,7 @@ def create_superuser(db: Session) -> None:
             password="admin123456",  # Change this in production!
             full_name="System Administrator",
             is_active=True,
-            is_superuser=True
+            is_superuser=True,
         )
         user_repository.create(db, obj_in=superuser_in)
         print("Superuser created successfully!")
@@ -54,15 +54,15 @@ if __name__ == "__main__":
     Run this script to initialize the database.
     """
     from app.core.database import SessionLocal
-    
+
     # Initialize database tables
     init_db()
-    
+
     # Create initial superuser
     db = SessionLocal()
     try:
         create_superuser(db)
     finally:
         db.close()
-    
+
     print("\nDatabase initialization completed!")

@@ -19,29 +19,29 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     Base repository with CRUD operations.
     Implements Repository Pattern for data access abstraction.
     """
-    
+
     def __init__(self, model: Type[ModelType]):
         """
         Initialize repository with model class.
-        
+
         Args:
             model: SQLAlchemy model class
         """
         self.model = model
-    
+
     def get(self, db: Session, id: int) -> Optional[ModelType]:
         """
         Get a single record by ID.
-        
+
         Args:
             db: Database session
             id: Record ID
-            
+
         Returns:
             Optional[ModelType]: Record if found, None otherwise
         """
         return db.query(self.model).filter(self.model.id == id).first()
-    
+
     def get_multi(
         self,
         db: Session,
@@ -53,19 +53,19 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     ) -> List[ModelType]:
         """
         Get multiple records with pagination.
-        
+
         Args:
             db: Database session
             skip: Number of records to skip
             limit: Maximum number of records to return
             order_by: Field name to order by
             order_direction: Order direction ('asc' or 'desc')
-            
+
         Returns:
             List[ModelType]: List of records
         """
         query = db.query(self.model)
-        
+
         if order_by:
             order_field = getattr(self.model, order_by, None)
             if order_field:
@@ -73,18 +73,18 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
                     query = query.order_by(desc(order_field))
                 else:
                     query = query.order_by(asc(order_field))
-        
+
         return query.offset(skip).limit(limit).all()
-    
+
     def create(self, db: Session, *, obj_in: CreateSchemaType, **kwargs) -> ModelType:
         """
         Create a new record.
-        
+
         Args:
             db: Database session
             obj_in: Pydantic schema with creation data
             **kwargs: Additional fields not in schema
-            
+
         Returns:
             ModelType: Created record
         """
@@ -95,7 +95,7 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         db.commit()
         db.refresh(db_obj)
         return db_obj
-    
+
     def update(
         self,
         db: Session,
@@ -105,12 +105,12 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     ) -> ModelType:
         """
         Update an existing record.
-        
+
         Args:
             db: Database session
             db_obj: Existing database object
             obj_in: Update data (schema or dictionary)
-            
+
         Returns:
             ModelType: Updated record
         """
@@ -118,24 +118,24 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             update_data = obj_in
         else:
             update_data = obj_in.model_dump(exclude_unset=True)
-        
+
         for field, value in update_data.items():
             if hasattr(db_obj, field):
                 setattr(db_obj, field, value)
-        
+
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
         return db_obj
-    
+
     def remove(self, db: Session, *, id: int) -> Optional[ModelType]:
         """
         Delete a record by ID.
-        
+
         Args:
             db: Database session
             id: Record ID
-            
+
         Returns:
             Optional[ModelType]: Deleted record if found, None otherwise
         """
@@ -144,17 +144,15 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             db.delete(obj)
             db.commit()
         return obj
-    
+
     def count(self, db: Session) -> int:
         """
         Count total records.
-        
+
         Args:
             db: Database session
-            
+
         Returns:
             int: Total record count
         """
         return db.query(self.model).count()
-    
-    

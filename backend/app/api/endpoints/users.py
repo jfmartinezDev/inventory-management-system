@@ -10,7 +10,7 @@ from app.core import database
 from app.api.deps import (
     get_current_active_user,
     get_current_active_superuser,
-    PaginationParams
+    PaginationParams,
 )
 from app.models.user import User as UserModel
 from app.repositories.user import user_repository
@@ -21,14 +21,14 @@ router = APIRouter()
 
 @router.get("/me", response_model=User)
 async def read_users_me(
-    current_user: UserModel = Depends(get_current_active_user)
+    current_user: UserModel = Depends(get_current_active_user),
 ) -> User:
     """
     Get current user profile.
-    
+
     Args:
         current_user: Current authenticated user
-        
+
     Returns:
         User: Current user profile
     """
@@ -44,12 +44,12 @@ async def update_user_me(
 ) -> User:
     """
     Update current user profile.
-    
+
     Args:
         db: Database session
         user_in: User update data
         current_user: Current authenticated user
-        
+
     Returns:
         User: Updated user profile
     """
@@ -59,18 +59,18 @@ async def update_user_me(
         if existing_user:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Email already registered"
+                detail="Email already registered",
             )
-    
+
     # Check if username is being updated and already exists
     if user_in.username and user_in.username != current_user.username:
         existing_user = user_repository.get_by_username(db, username=user_in.username)
         if existing_user:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Username already registered"
+                detail="Username already registered",
             )
-    
+
     user = user_repository.update(db, db_obj=current_user, obj_in=user_in)
     return user
 
@@ -79,16 +79,16 @@ async def update_user_me(
 async def read_users(
     db: Session = Depends(database.get_db),
     pagination: PaginationParams = Depends(),
-    current_user: UserModel = Depends(get_current_active_superuser)
+    current_user: UserModel = Depends(get_current_active_superuser),
 ) -> List[User]:
     """
     Get all users (superuser only).
-    
+
     Args:
         db: Database session
         pagination: Pagination parameters
         current_user: Current superuser
-        
+
     Returns:
         List[User]: List of users
     """
@@ -97,7 +97,7 @@ async def read_users(
         skip=pagination.skip,
         limit=pagination.limit,
         order_by=pagination.order_by,
-        order_direction=pagination.order_direction
+        order_direction=pagination.order_direction,
     )
     return users
 
@@ -106,27 +106,26 @@ async def read_users(
 async def read_user_by_id(
     user_id: int,
     db: Session = Depends(database.get_db),
-    current_user: UserModel = Depends(get_current_active_superuser)
+    current_user: UserModel = Depends(get_current_active_superuser),
 ) -> User:
     """
     Get a specific user by ID (superuser only).
-    
+
     Args:
         user_id: User ID
         db: Database session
         current_user: Current superuser
-        
+
     Returns:
         User: User profile
-        
+
     Raises:
         HTTPException: If user not found
     """
     user = user_repository.get(db, id=user_id)
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
     return user
 
@@ -135,30 +134,28 @@ async def read_user_by_id(
 async def delete_user(
     user_id: int,
     db: Session = Depends(database.get_db),
-    current_user: UserModel = Depends(get_current_active_superuser)
+    current_user: UserModel = Depends(get_current_active_superuser),
 ) -> None:
     """
     Delete a user (superuser only).
-    
+
     Args:
         user_id: User ID to delete
         db: Database session
         current_user: Current superuser
-        
+
     Raises:
         HTTPException: If user not found or trying to delete self
     """
     if user_id == current_user.id:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Cannot delete yourself"
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot delete yourself"
         )
-    
+
     user = user_repository.get(db, id=user_id)
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
-    
+
     user_repository.remove(db, id=user_id)
